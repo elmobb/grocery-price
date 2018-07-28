@@ -3,15 +3,8 @@ from .models import Session, Product, Price
 
 class PricePipeline(object):
 
-    def process_item(self, item, spider):
-        """
-        Store crawled result to database.
-
-        :param item: the item scraped
-        :param spider: the spider which scraped the item
-        :return: the item scraped
-        """
-
+    @staticmethod
+    def process_item(item, spider):
         session = Session()
         product = session.query(Product).filter_by(shop=item["shop"], sku=item["sku"]).one_or_none()
 
