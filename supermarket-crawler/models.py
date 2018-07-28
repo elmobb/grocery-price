@@ -2,9 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, 
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = create_engine("sqlite:///temp.db", echo=True)
 Base = declarative_base()
-Session = sessionmaker(bind=engine)
 
 
 class CrawlerStats(Base):
@@ -57,4 +55,8 @@ class Price(Base):
     product_id = Column(Integer, ForeignKey("product.id"))
 
 
-Base.metadata.create_all(engine)
+def get_session(spider):
+    uri = spider.crawler.settings["DATABASE_URI"]
+    engine = create_engine(uri, echo=True)
+    Base.metadata.create_all(engine)
+    return sessionmaker(bind=engine)()

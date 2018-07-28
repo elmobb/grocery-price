@@ -1,5 +1,6 @@
 BOT_NAME = "price"
 COOKIES_ENABLED = False
+DATABASE_URI = "sqlite:///temp.db"
 DOWNLOAD_DELAY = 2
 DOWNLOADER_MIDDLEWARES = {
     "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,

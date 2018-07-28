@@ -1,11 +1,11 @@
-from .models import Session, Product, Price
+from .models import Product, Price, get_session
 
 
 class PricePipeline(object):
 
     @staticmethod
     def process_item(item, spider):
-        session = Session()
+        session = get_session(spider=spider)
         product = session.query(Product).filter_by(shop=item["shop"], sku=item["sku"]).one_or_none()
 
         # Price.
