@@ -4,20 +4,26 @@ from .models import Session, Product, Price
 class PricePipeline(object):
 
     def process_item(self, item, spider):
-        session = Session()
+        """
+        Store crawled result to database.
 
+        :param item: the item scraped
+        :param spider: the spider which scraped the item
+        :return: the item scraped
+        """
+
+        session = Session()
         product = session.query(Product).filter_by(shop=item["shop"], sku=item["sku"]).one_or_none()
 
-        product_is_updated = any([
-            product.shop == item["shop"],
-            product.sku == item["sku"],
-            product.brand_name == item["brand_name"],
-            product.name == item["name"],
-            product.uom == item["uom"],
-            product.url == item["url"]
-        ]) if product is not None else False
+        # Price.
+        price = Price(
+            price=item["price"],
+            currency=item["currency"],
+            update_time=item["update_time"]
+        )
 
-        if product is None or product_is_updated:
+        if product is None:
+            # Insert new product.
             product = Product(
                 shop=item["shop"],
                 sku=item["sku"],
@@ -27,12 +33,19 @@ class PricePipeline(object):
                 url=item["url"],
                 update_time=item["update_time"]
             )
+            product.prices.append(price)
+            session.add(product)
+        else:
+            # Update existing product.
+            product.shop = item["shop"]
+            product.sku = item["sku"]
+            product.brand_name = item["brand_name"]
+            product.name = item["name"]
+            product.uom = item["uom"]
+            product.url = item["url"]
+            product.update_time = item["update_time"]
+            product.prices.append(price)
 
-        product.prices.append(Price(
-            price=item["price"],
-            currency=item["currency"],
-            update_time=item["update_time"]
-        ))
-
-        session.add(product)
         session.commit()
+
+        return item
