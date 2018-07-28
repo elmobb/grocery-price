@@ -13,7 +13,7 @@ class CrawlerStats(Base):
     downloader_response_bytes = Column(Integer, nullable=True)
     downloader_response_count = Column(Integer, nullable=True)
     dupefilter_filtered = Column(Integer, nullable=True)
-    finish_reason = Column(Integer, nullable=False)
+    finish_reason = Column(String(100), nullable=False)
     finish_time = Column(DateTime, nullable=False)
     item_scraped_count = Column(Integer, nullable=True)
     log_count_debug = Column(Integer, nullable=True)
