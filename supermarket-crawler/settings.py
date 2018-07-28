@@ -18,3 +18,9 @@ DOWNLOADER_MIDDLEWARES = {
 
 COOKIES_ENABLED = False
 DOWNLOAD_DELAY = 2
+
+LOG_FILE = "log.txt"
+
+EXTENSIONS = {
+    "supermarket-crawler.extensions.StatsLogger": 500
+}

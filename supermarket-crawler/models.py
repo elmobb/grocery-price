@@ -7,6 +7,30 @@ Base = declarative_base()
 Session = sessionmaker(bind=engine)
 
 
+class CrawlerStats(Base):
+    __tablename__ = "crawler_stats"
+    id = Column(Integer, primary_key=True)
+    downloader_request_bytes = Column(Integer, nullable=True)
+    downloader_request_count = Column(Integer, nullable=True)
+    downloader_response_bytes = Column(Integer, nullable=True)
+    downloader_response_count = Column(Integer, nullable=True)
+    dupefilter_filtered = Column(Integer, nullable=True)
+    finish_reason = Column(Integer, nullable=False)
+    finish_time = Column(DateTime, nullable=False)
+    item_scraped_count = Column(Integer, nullable=True)
+    log_count_debug = Column(Integer, nullable=True)
+    log_count_info = Column(Integer, nullable=True)
+    memusage_max = Column(Integer, nullable=True)
+    memusage_startup = Column(Integer, nullable=True)
+    request_depth_max = Column(Integer, nullable=True)
+    response_received_count = Column(Integer, nullable=True)
+    scheduler_dequeued = Column(Integer, nullable=True)
+    scheduler_dequeued_memory = Column(Integer, nullable=True)
+    scheduler_enqueued = Column(Integer, nullable=True)
+    scheduler_enqueued_memory = Column(Integer, nullable=True)
+    start_time = Column(DateTime, nullable=False)
+
+
 class Product(Base):
     __tablename__ = "product"
     __table_args__ = (UniqueConstraint("shop", "sku", "update_time", name="shop_sku"),)
