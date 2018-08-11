@@ -7,14 +7,14 @@ DOWNLOADER_MIDDLEWARES = {
     "scrapy_fake_useragent.middleware.RandomUserAgentMiddleware": 400,
 }
 EXTENSIONS = {
-    "supermarket-crawler.extensions.StatsLogger": 500
+    "supermarket_crawler.extensions.StatsLogger": 500
 }
 FEED_FORMAT = "json"
 FEED_EXPORT_INDENT = 4
 FEED_EXPORT_ENCODING = "utf8"
 FEED_URI = "test.json"
 ITEM_PIPELINES = {
-    "supermarket-crawler.item_pipelines.PricePipeline": 300
+    "supermarket_crawler.item_pipelines.PricePipeline": 300
 }
 LOG_FILE = "log.txt"
-SPIDER_MODULES = ["supermarket-crawler.spiders"]
+SPIDER_MODULES = ["supermarket_crawler.spiders"]
