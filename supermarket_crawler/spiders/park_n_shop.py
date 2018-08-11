@@ -4,54 +4,50 @@ import scrapy
 from ..items import Price
 
 
+def get_price(item, currency):
+    curr_text = {"HKD": "HK$"}[currency]
+    return item.xpath(".//div[@class='price discount']/text()").extract_first().replace(curr_text, "")
+
+
 class Spider(scrapy.Spider):
     name = "park_n_shop"
-    start_urls = ["http://www.parknshop.com/zh-hk"]
+    start_urls = [
+        "https://www.parknshop.com/zh-hk/beverages-wine-spirits/lc/040000"
+    ]
+    currency = "HKD"
+    download_delay = 0
 
     def parse(self, response):
         """
-        @url http://www.parknshop.com/zh-hk
-        @returns items 0 0
-        @returns requests 0
-        """
-        for category in response.xpath("//div[@class='list lv1']/a/@href").extract():
-            yield scrapy.Request(response.urljoin(category), callback=self.parse_category_items)
-
-    def parse_category_items(self, response):
-        """
         @url http://www.parknshop.com/zh-hk/beverages-wine-spirits/lc/040000
-        @returns items 0 0
-        @returns requests 0
+        @returns items 36 36
+        @returns requests 0 1
         """
-        for item in response.xpath("//div[@class='photo']/a/@href").extract():
-            yield scrapy.Request(response.urljoin(item), callback=self.parse_item)
 
-        next_page = response.xpath(
-            "//*[@id='product-list']//*[contains(@data-hasnextpage, 'true')]/@data-nextpageurl").extract_first()
-        yield scrapy.Request(response.urljoin(next_page), callback=self.parse_category_items)
+        # Crawl next page.
+        next_page = response.xpath("//div[@class='btn-show-more']")
+        has_next_page = (next_page.xpath("@data-hasnextpage").extract_first() == "true")
+        if has_next_page:
+            next_page_url = next_page.xpath("@data-nextpageurl").extract_first()
+            yield scrapy.Request(response.urljoin(next_page_url), callback=self.parse)
 
-    def parse_item(self, response):
-        """
-        @url http://www.parknshop.com/zh-hk/greek-style-blueberry-yogurt/p/BP_448916
-        @returns items 1 1
-        @returns requests 0 0
-        @scrapes shop categories brand_name name price currency rrp sku special_offers url others uom update_time
-        """
-        yield Price(
-            shop=self.name,
-            categories=response.xpath("//*[@id='breadcrumb']//*[@itemprop='name']/text()").extract()[1:-1],
-            brand_name=response.xpath("//*[@id='item-photo-container']/div[1]/a/span/text()").extract_first(),
-            name=response.xpath("//h1[@class='productName productNameForH1']/text()").extract_first(),
-            price=float(
-                response.xpath("//*[@id='item-photo-container']//*[@itemprop='price']/@content").extract_first()),
-            currency=response.xpath(
-                "//*[@id='item-photo-container']//*[@itemprop='priceCurrency']/@content").extract_first(),
-            rrp=response.xpath(
-                "//*[@id='item-photo-container']/div[3]/div[3]/div[1]/div/span[2]/span/text()").extract_first(),
-            sku=str(response.xpath("//*[@id='item-photo-container']/div[2]/div[2]/div[1]/span/text()").extract_first()),
-            special_offers=response.xpath("//*[@id='special-offers']/div[2]/div//*[@class='info']/text()").extract(),
-            url=response.url,
-            others=response.xpath("//*[@class='desktop-others-customer left']/li/div/@title").extract(),
-            uom=response.xpath("//*[@id='item-photo-container']/div[1]/span/text()").extract_first(),
-            update_time=datetime.now()
-        )
+        # Crawl this page.
+        for item in response.xpath("//*[@id='product-list']/div/div[2]/div[2]/div[2]/div"):
+            yield Price(
+                shop=self.name,
+                categories=item.xpath(
+                    ".//div[@class='homeProductCarousel']/@data-gtm-homeproductcarousel-category").extract_first(),
+                brand_name=item.xpath(
+                    ".//div[@class='homeProductCarousel']/@data-gtm-homeproductcarousel-brand").extract_first(),
+                name=item.xpath(
+                    ".//div[@class='homeProductCarousel']/@data-gtm-homeproductcarousel-name").extract_first(),
+                price=get_price(item=item, currency=self.currency),
+                currency=self.currency,
+                rrp=item.xpath(".//div[@class='price rrp']/span[1]/text()").extract_first(),
+                sku=item.xpath(".//div[@class='favourite ']/@data-product-code").extract_first(),
+                special_offers=item.xpath(".//div[@class='special-offer']/span[1]/text()").extract_first(),
+                url=item.xpath(".//div[@class='name']/a[1]/@href").extract_first(),
+                others=None,
+                uom=item.xpath(".//span[@class='sizeUnit']/text()").extract_first(),
+                update_time=datetime.now()
+            )
