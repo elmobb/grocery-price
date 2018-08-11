@@ -11,11 +11,12 @@ def get_price(item, currency):
 
 class Spider(scrapy.Spider):
     name = "park_n_shop"
+    start_urls_name = "PARK_N_SHOP_START_URLS"
     currency = "HKD"
     download_delay = 0
 
     def start_requests(self):
-        for url in self.settings.get("START_URLS").get(self.name):
+        for url in self.settings.get(self.start_urls_name).split("|"):
             yield scrapy.Request(url, callback=self.parse)
 
     def parse(self, response):
