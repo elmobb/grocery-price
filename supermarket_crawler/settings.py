@@ -12,6 +12,7 @@ EXTENSIONS = {
 FEED_FORMAT = "json"
 FEED_EXPORT_INDENT = 4
 FEED_EXPORT_ENCODING = "utf8"
+FEED_STORAGES = {"sftp": "scrapy_feedexporter_sftp.SFTPFeedStorage"}
 FEED_URI = "test.json"
 ITEM_PIPELINES = {
     "supermarket_crawler.item_pipelines.PricePipeline": 300
