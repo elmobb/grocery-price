@@ -1,12 +1,20 @@
 from datetime import datetime
+
 import scrapy
 
 from ..items import Price
 
 
-def get_price(item, currency):
-    curr_text = {"HKD": "HK$"}[currency]
-    return item.xpath(".//div[@class='price discount']/text()").extract_first().replace(curr_text, "")
+def get_price(price):
+    if price is None:
+        return None
+    assert isinstance(price, str)
+    for old, new in {
+        "HK$": "",
+        ",":   ""
+    }.items():
+        price = price.replace(old, new)
+    return float(price)
 
 
 class Spider(scrapy.Spider):
@@ -43,7 +51,7 @@ class Spider(scrapy.Spider):
                     ".//div[@class='homeProductCarousel']/@data-gtm-homeproductcarousel-brand").extract_first(),
                 name=item.xpath(
                     ".//div[@class='homeProductCarousel']/@data-gtm-homeproductcarousel-name").extract_first(),
-                price=get_price(item=item, currency=self.currency),
+                price=get_price(price=item.xpath(".//div[@class='price discount']/text()").extract_first()),
                 currency=self.currency,
                 rrp=item.xpath(".//div[@class='price rrp']/span[1]/text()").extract_first(),
                 sku=item.xpath(".//div[@class='favourite ']/@data-product-code").extract_first(),
