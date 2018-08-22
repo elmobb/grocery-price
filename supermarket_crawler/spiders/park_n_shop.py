@@ -8,7 +8,6 @@ from ..items import Price
 def get_price(price):
     if price is None:
         return None
-    assert isinstance(price, str), price
     for old, new in {
         "HK$": "",
         ",":   ""
