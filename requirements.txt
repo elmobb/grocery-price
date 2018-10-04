@@ -6,7 +6,7 @@ cffi==1.11.5
 constantly==15.1.0
 cryptography==2.3.1
 cssselect==1.0.3
-fake-useragent==0.1.10
+fake-useragent==0.1.11
 hyperlink==18.0.0
 idna==2.7
 incremental==17.5.0
