@@ -60,7 +60,7 @@ class SpidersMaster(object):
             file_name = o.path.split("/")[-1]
 
             # Write items to local file first for better performance.
-            with open(file_name, "w") as f:
+            with open(file_name, "w", encoding="utf8") as f:
                 json.dump(items, f, ensure_ascii=False)
 
             # Upload items file to target location.
