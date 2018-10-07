@@ -1,6 +1,8 @@
+import os
+
 BOT_NAME = "price"
 COOKIES_ENABLED = False
-DATABASE_URI = "sqlite:///temp.db"
+DATABASE_URI = os.environ.get("DATABASE_URI")
 DOWNLOAD_DELAY = 2
 DOWNLOADER_MIDDLEWARES = {
     "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,
@@ -12,8 +14,10 @@ EXTENSIONS = {
 FEED_FORMAT = "json"
 FEED_EXPORT_INDENT = 4
 FEED_EXPORT_ENCODING = "utf8"
-FEED_STORAGES = {"sftp": "scrapy_feedexporter_sftp.SFTPFeedStorage"}
-FEED_URI = "test.json"
+FEED_STORAGES = {
+    "sftp": "scrapy_feedexporter_sftp.SFTPFeedStorage"
+}
+FEED_URI = os.environ.get("FEED_URI")
 ITEM_PIPELINES = {
     "supermarket_crawler.item_pipelines.PricePipeline": 300
 }
