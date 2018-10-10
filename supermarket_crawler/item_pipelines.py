@@ -1,22 +1,36 @@
+import logging
+
 from .models import Product, Price, get_session
 
 
-class PricePipeline(object):
+def update_product_price_records(session, items):
+    # Preload all existing products for better performance.
+    existing_products = {(i.shop, i.sku): i for i in session.query(Product).filter_by().all()}
 
-    @staticmethod
-    def process_item(item, spider):
-        session = get_session(spider=spider)
-        product = session.query(Product).filter_by(shop=item["shop"], sku=item["sku"]).one_or_none()
+    new_products = []
+    seen_keys = set()
 
-        # Price.
-        price = Price(
-            price=item["price"],
-            currency=item["currency"],
-            update_time=item["update_time"]
-        )
+    # For duplicated items, keep only the latest updated one.
+    for item in sorted(items, key=lambda i: i["update_time"], reverse=True):
 
-        if product is None:
-            # Insert new product.
+        if (item["shop"], item["sku"]) in seen_keys:
+            continue
+
+        seen_keys.add((item["shop"], item["sku"]))
+
+        product = existing_products.get((item["shop"], item["sku"]))
+
+        if product is not None:
+            # Update record.
+            product.shop = item["shop"]
+            product.sku = item["sku"]
+            product.brand_name = item["brand_name"]
+            product.name = item["name"]
+            product.uom = item["uom"]
+            product.url = item["url"]
+            product.update_time = item["update_time"]
+        else:
+            # Insert record.
             product = Product(
                 shop=item["shop"],
                 sku=item["sku"],
@@ -26,19 +40,31 @@ class PricePipeline(object):
                 url=item["url"],
                 update_time=item["update_time"]
             )
-            product.prices.append(price)
-            session.add(product)
-        else:
-            # Update existing product.
-            product.shop = item["shop"]
-            product.sku = item["sku"]
-            product.brand_name = item["brand_name"]
-            product.name = item["name"]
-            product.uom = item["uom"]
-            product.url = item["url"]
-            product.update_time = item["update_time"]
-            product.prices.append(price)
+            new_products.append(product)
 
-        session.commit()
+        # Add new price record.
+        product.prices.append(Price(
+            price=item["price"],
+            currency=item["currency"],
+            update_time=item["update_time"]
+        ))
 
+    session.add_all(new_products)
+    session.commit()
+
+
+class DatabasePipeline(object):
+
+    def __init__(self):
+        super(DatabasePipeline, self).__init__()
+        self.items = []
+
+    def close_spider(self, spider):
+        session = get_session(spider=spider)
+        update_product_price_records(session, items=self.items)
+        session.close()
+
+    def process_item(self, item, spider):
+        logging.info(f"crawled item# {len(self.items) + 1}: '{item['shop']}' '{item['name']}'")
+        self.items.append(item)
         return item

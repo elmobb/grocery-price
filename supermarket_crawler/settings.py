@@ -19,7 +19,7 @@ FEED_STORAGES = {
 }
 FEED_URI = os.environ.get("FEED_URI")
 ITEM_PIPELINES = {
-    "supermarket_crawler.item_pipelines.PricePipeline": 300
+    "supermarket_crawler.item_pipelines.DatabasePipeline": 300
 }
 LOG_STDOUT = True
 LOG_LEVEL = "INFO"
