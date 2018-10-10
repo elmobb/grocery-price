@@ -8,6 +8,10 @@ from ..items import Price
 def get_price(price):
     if price is None:
         return None
+
+    if isinstance(price, (int, float)):
+        return float(price)
+
     for old, new in {
         "HK$": "",
         ",":   ""

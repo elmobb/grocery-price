@@ -10,8 +10,8 @@ class Test(TestCase):
     def test_return_none_if_input_is_none(self):
         self.assertIsNone(self.func(None))
 
-    def test_input_must_be_string(self):
-        self.assertRaises(AssertionError, self.func, float(123))
+    def test_input_can_be_float(self):
+        self.assertEqual(float(123), self.func(float(123)))
 
     def test_hkd_is_replaced(self):
         self.assertEqual(float(123), self.func("HK$123"))
