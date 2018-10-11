@@ -1,8 +1,10 @@
-import os
+from config import Config
+
+config = Config()
 
 BOT_NAME = "price"
 COOKIES_ENABLED = False
-DATABASE_URI = os.environ.get("DATABASE_URI")
+DATABASE_URI = config.DATABASE_URI
 DOWNLOAD_DELAY = 2
 DOWNLOADER_MIDDLEWARES = {
     "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,
@@ -17,7 +19,7 @@ FEED_EXPORT_ENCODING = "utf8"
 FEED_STORAGES = {
     "sftp": "scrapy_feedexporter_sftp.SFTPFeedStorage"
 }
-FEED_URI = os.environ.get("FEED_URI")
+FEED_URI = config.FEED_URI
 ITEM_PIPELINES = {
     "supermarket_crawler.item_pipelines.DatabasePipeline": 300
 }

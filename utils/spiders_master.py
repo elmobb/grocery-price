@@ -8,6 +8,10 @@ from urllib.parse import urlsplit
 import paramiko
 import scrapinghub
 
+from config import Config
+
+config = Config()
+
 logging.getLogger().setLevel(logging.INFO)
 
 
@@ -17,10 +21,10 @@ class SpidersMaster(object):
     _time_between_checking_state = 15
 
     def __init__(self, api_key=None, project_id=None, spiders=None, uri=None):
-        self.client = scrapinghub.ScrapinghubClient(api_key or os.environ.get("SCRAPY_API_KEY"))
-        project = self.client.get_project(project_id or os.environ.get("SCRAPY_PROJECT_ID"))
+        self.client = scrapinghub.ScrapinghubClient(api_key or config.SCRAPY_API_KEY)
+        project = self.client.get_project(project_id or config.SCRAPY_API_KEY)
         self.spiders = spiders or [project.spiders.get(i["id"]) for i in project.spiders.list()]
-        self.uri = uri or os.environ.get("FEED_URI")
+        self.uri = uri or config.FEED_URI
 
     def start_crawl(self):
         """Start a Scrapy job and export items to destination.
