@@ -1,6 +1,10 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, UniqueConstraint, ForeignKey
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, UniqueConstraint, create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import relationship, sessionmaker
+
+from config import Config
+
+config = Config()
 
 Base = declarative_base()
 
@@ -55,8 +59,8 @@ class Price(Base):
     product_id = Column(Integer, ForeignKey("product.id"))
 
 
-def get_session(spider):
-    uri = spider.crawler.settings["DATABASE_URI"]
-    engine = create_engine(uri, echo=True)
+def get_session(uri=None):
+    engine = create_engine(uri or config.DATABASE_URI)
     Base.metadata.create_all(engine)
-    return sessionmaker(bind=engine)()
+    Session = sessionmaker(bind=engine)
+    return Session()

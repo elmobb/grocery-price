@@ -1,6 +1,6 @@
 import logging
 
-from .models import Product, Price, get_session
+from models import Price, Product, get_session
 
 
 def update_product_price_records(session, items):
@@ -60,7 +60,7 @@ class DatabasePipeline(object):
         self.items = []
 
     def close_spider(self, spider):
-        session = get_session(spider=spider)
+        session = get_session(uri=spider.crawler.settings["DATABASE_URI"])
         update_product_price_records(session, items=self.items)
         session.close()
 

@@ -1,6 +1,6 @@
 from scrapy import signals
 
-from .models import CrawlerStats, get_session
+from models import CrawlerStats, get_session
 
 
 class StatsLogger(object):
@@ -15,7 +15,7 @@ class StatsLogger(object):
         return ext
 
     def spider_closed(self, spider):
-        session = get_session(spider=spider)
+        session = get_session(uri=spider.crawler.settings["DATABASE_URI"])
         stats = self.stats.get_stats()
         session.add(CrawlerStats(
             downloader_request_bytes=stats.get("downloader/request_bytes", None),

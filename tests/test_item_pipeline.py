@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from supermarket_crawler import models
+import models
 from supermarket_crawler.item_pipelines import update_product_price_records
 from supermarket_crawler.items import Price
 
