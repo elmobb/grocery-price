@@ -47,6 +47,9 @@ class Product(Base):
 
     prices = relationship("Price")
 
+    def __repr__(self):
+        return f"<Product {self.shop} {self.sku} {self.name}>"
+
 
 class Price(Base):
     __tablename__ = "price"
@@ -57,6 +60,9 @@ class Price(Base):
     update_time = Column(DateTime)
 
     product_id = Column(Integer, ForeignKey("product.id"))
+
+    def __repr__(self):
+        return f"Price {self.product_id} {self.update_time} {self.price} {self.currency}>"
 
 
 def get_session(uri=None):
