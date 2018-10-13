@@ -5,8 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import models
-from supermarket_crawler.item_pipelines import update_product_price_records
 from supermarket_crawler.items import Price
+from utils.load_item_files import update_product_price_records
 
 
 def scrapy_item(**kwargs):
@@ -42,6 +42,7 @@ class TestCase(unittest.TestCase):
         self.func(session=self.session, items=[
             scrapy_item()
         ])
+
         self.assertEqual(1, len(self.session.query(models.Product).all()))
         self.assertEqual(1, len(self.session.query(models.Price).all()))
 
@@ -50,11 +51,11 @@ class TestCase(unittest.TestCase):
             scrapy_item(sku="sku_1"),
             scrapy_item(sku="sku_2")
         ])
+
         self.assertEqual(2, len(self.session.query(models.Product).all()))
         self.assertEqual(2, len(self.session.query(models.Price).all()))
 
-    def test_update_product(self):
-        # Prepare database.
+    def test_update_one_product(self):
         self.func(session=self.session, items=[
             scrapy_item(sku="sku_1", update_time=datetime(2018, 1, 1)),
             scrapy_item(sku="sku_2", update_time=datetime(2018, 1, 1)),
@@ -64,22 +65,16 @@ class TestCase(unittest.TestCase):
         self.func(session=self.session, items=[
             scrapy_item(sku="sku_1", update_time=datetime(2018, 1, 2))
         ])
-        self.assertEqual(
-            datetime(2018, 1, 2),
-            self.session.query(models.Product).filter_by(sku="sku_1").one().update_time
-        )
-        self.assertEqual(
-            datetime(2018, 1, 1),
-            self.session.query(models.Product).filter_by(sku="sku_2").one().update_time
-        )
-        self.assertEqual(
-            datetime(2018, 1, 1),
-            self.session.query(models.Product).filter_by(sku="sku_3").one().update_time
-        )
-        self.assertEqual(3 + 1, len(self.session.query(models.Price).all()))
+
+        self.assertEqual([
+            ("sku_1", datetime(2018, 1, 2)),
+            ("sku_2", datetime(2018, 1, 1)),
+            ("sku_3", datetime(2018, 1, 1))
+        ], self.session.query(models.Product.sku, models.Product.update_time).all())
+
+        self.assertEqual(4, len(self.session.query(models.Price).all()))
 
     def test_update_multiple_products(self):
-        # Prepare database.
         self.func(session=self.session, items=[
             scrapy_item(sku="sku_1", update_time=datetime(2018, 1, 1)),
             scrapy_item(sku="sku_2", update_time=datetime(2018, 1, 1)),
@@ -90,6 +85,7 @@ class TestCase(unittest.TestCase):
             scrapy_item(sku="sku_1", update_time=datetime(2018, 1, 2)),
             scrapy_item(sku="sku_2", update_time=datetime(2018, 1, 2))
         ])
+
         self.assertEqual(
             datetime(2018, 1, 2),
             self.session.query(models.Product).filter_by(sku="sku_1").one().update_time
@@ -102,27 +98,55 @@ class TestCase(unittest.TestCase):
             datetime(2018, 1, 1),
             self.session.query(models.Product).filter_by(sku="sku_3").one().update_time
         )
-        self.assertEqual(3 + 2, len(self.session.query(models.Price).all()))
 
-    def test_insert_new_prices_for_multiple_items(self):
-        # Prepare database.
+        self.assertEqual([
+            ("sku_1", datetime(2018, 1, 2)),
+            ("sku_2", datetime(2018, 1, 2)),
+            ("sku_3", datetime(2018, 1, 1))
+        ], self.session.query(models.Product.sku, models.Product.update_time).all())
+        self.assertEqual(5, len(self.session.query(models.Price).all()))
+
+    def test_update_products_in_same_batch(self):
         self.func(session=self.session, items=[
             scrapy_item(sku="sku_1", update_time=datetime(2018, 1, 1)),
-            scrapy_item(sku="sku_2", update_time=datetime(2018, 1, 1))
-        ])
-
-        self.func(session=self.session, items=[
-            scrapy_item(sku="sku_1", update_time=datetime(2018, 1, 2)),
+            scrapy_item(sku="sku_2", update_time=datetime(2018, 1, 1)),
+            scrapy_item(sku="sku_3", update_time=datetime(2018, 1, 1)),
+            scrapy_item(sku="sku_1", update_time=datetime(2017, 12, 31)),
             scrapy_item(sku="sku_2", update_time=datetime(2018, 1, 2))
         ])
-        self.assertEqual(2, len(self.session.query(models.Product).all()))
-        self.assertEqual(2 + 2, len(self.session.query(models.Price).all()))
 
-    def test_insert_same_item(self):
+        self.assertEqual([
+            ("sku_1", datetime(2018, 1, 1)),
+            ("sku_2", datetime(2018, 1, 2)),
+            ("sku_3", datetime(2018, 1, 1))
+        ], self.session.query(models.Product.sku, models.Product.update_time).all())
+        self.assertEqual(5, len(self.session.query(models.Price).all()))
+
+    def test_update_prices_of_same_update_time(self):
+        # If the 2 prices are the same, do not update and do not raise error.
         self.func(session=self.session, items=[
-            scrapy_item(update_time=datetime(2018, 1, 3)),
-            scrapy_item(update_time=datetime(2018, 1, 1)),
-            scrapy_item(update_time=datetime(2018, 1, 2))
+            scrapy_item(sku="sku", update_time=datetime(2018, 1, 1), price=1),
+            scrapy_item(sku="sku", update_time=datetime(2018, 1, 1), price=1)
         ])
-        self.assertEqual(datetime(2018, 1, 3), self.session.query(models.Product).one().update_time)
-        self.assertEqual(1, len(self.session.query(models.Price).all()))
+        self.assertEqual([
+            ("sku", datetime(2018, 1, 1))
+        ], self.session.query(models.Product.sku, models.Product.update_time).all())
+        self.assertEqual([
+            (1, datetime(2018, 1, 1))
+        ], self.session.query(models.Price.price, models.Price.update_time).all())
+
+        # If the 2 prices are different, do not update and do not raise error.
+        self.func(session=self.session, items=[
+            scrapy_item(sku="sku", update_time=datetime(2018, 1, 1), price=1),
+            scrapy_item(sku="sku", update_time=datetime(2018, 1, 1), price=2)
+        ])
+        self.assertEqual([
+            ("sku", datetime(2018, 1, 1))
+        ], self.session.query(models.Product.sku, models.Product.update_time).all())
+        self.assertEqual([
+            (1, datetime(2018, 1, 1))
+        ], self.session.query(models.Price.price, models.Price.update_time).all())
+
+    def test_commit_in_batches(self):
+        self.func(session=self.session, items=[scrapy_item(sku=i) for i in range(100)], commit_frequency=10)
+        self.assertEqual(100, self.session.query(models.Product).count())
