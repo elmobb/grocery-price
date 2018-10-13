@@ -122,8 +122,7 @@ class TestCase(unittest.TestCase):
         ], self.session.query(models.Product.sku, models.Product.update_time).all())
         self.assertEqual(5, len(self.session.query(models.Price).all()))
 
-    def test_update_prices_of_same_update_time(self):
-        # If the 2 prices are the same, do not update and do not raise error.
+    def test_update_prices_of_same_update_time_and_of_same_price(self):
         self.func(session=self.session, items=[
             scrapy_item(sku="sku", update_time=datetime(2018, 1, 1), price=1),
             scrapy_item(sku="sku", update_time=datetime(2018, 1, 1), price=1)
@@ -135,7 +134,7 @@ class TestCase(unittest.TestCase):
             (1, datetime(2018, 1, 1))
         ], self.session.query(models.Price.price, models.Price.update_time).all())
 
-        # If the 2 prices are different, do not update and do not raise error.
+    def test_update_prices_of_same_update_time_and_of_different_prices(self):
         self.func(session=self.session, items=[
             scrapy_item(sku="sku", update_time=datetime(2018, 1, 1), price=1),
             scrapy_item(sku="sku", update_time=datetime(2018, 1, 1), price=2)
@@ -145,6 +144,18 @@ class TestCase(unittest.TestCase):
         ], self.session.query(models.Product.sku, models.Product.update_time).all())
         self.assertEqual([
             (1, datetime(2018, 1, 1))
+        ], self.session.query(models.Price.price, models.Price.update_time).all())
+
+    def test_microsecond_of_update_time_are_ignored(self):
+        self.func(session=self.session, items=[
+            scrapy_item(sku="sku", update_time=datetime(2018, 1, 1, 0, 0, 0, 1), price=1),
+            scrapy_item(sku="sku", update_time=datetime(2018, 1, 1, 0, 0, 0, 2), price=2)
+        ])
+        self.assertEqual([
+            ("sku", datetime(2018, 1, 1, 0, 0, 0, 2))
+        ], self.session.query(models.Product.sku, models.Product.update_time).all())
+        self.assertEqual([
+            (2, datetime(2018, 1, 1, 0, 0, 0, 2))
         ], self.session.query(models.Price.price, models.Price.update_time).all())
 
     def test_commit_in_batches(self):

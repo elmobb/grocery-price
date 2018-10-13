@@ -53,7 +53,9 @@ def update_product_price_records(session, items, commit_frequency=1000):
             existing_products[item["shop"], item["sku"]] = product
 
         # Add new price record if update time does not exist.
-        if product is not None and not any(i.update_time == item["update_time"] for i in product.prices):
+        if product is not None and not any(
+                i.update_time.replace(microsecond=0) == item["update_time"].replace(microsecond=0) for i in
+                product.prices):
             product.prices.append(Price(
                 price=item["price"],
                 currency=item["currency"],
