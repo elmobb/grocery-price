@@ -106,7 +106,7 @@ def clean_item_price(price):
     raise TypeError(f"unknown type {type(price)}.")
 
 
-def main(file_count=1):
+def main(file_count=1, demo=False):
     sftp = get_sftp_session()
     db = get_db_session()
 
@@ -117,7 +117,9 @@ def main(file_count=1):
         with sftp.file(filename=file) as f:
             items = json.load(f)
             logging.info(f"processing {file} {len(items)} items")
-            update_product_price_records(session=db, items=items)
+
+            if not demo:
+                update_product_price_records(session=db, items=items)
 
     sftp.close()
     db.close()
