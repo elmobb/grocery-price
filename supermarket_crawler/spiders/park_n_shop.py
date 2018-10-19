@@ -59,7 +59,7 @@ class Spider(scrapy.Spider):
                 rrp=item.xpath(".//div[@class='price rrp']/span[1]/text()").extract_first(),
                 sku=item.xpath(".//div[@class='favourite ']/@data-product-code").extract_first(),
                 special_offers=item.xpath(".//div[@class='special-offer']/span[1]/text()").extract_first(),
-                url=item.xpath(".//div[@class='name']/a[1]/@href").extract_first(),
+                url="https://www.parknshop.com" + item.xpath(".//div[@class='name']/a[1]/@href").extract_first(),
                 others=None,
                 uom=item.xpath(".//span[@class='sizeUnit']/text()").extract_first(),
                 update_time=datetime.now()
