@@ -8,9 +8,10 @@ DOWNLOADER_MIDDLEWARES = {
     "scrapy.downloadermiddlewares.useragent.UserAgentMiddleware": None,
     "scrapy_fake_useragent.middleware.RandomUserAgentMiddleware": 400,
 }
-EXTENSIONS = {
-    "supermarket_crawler.extensions.StatsLogger": 500
-}
+# TODO: How to import from root directory when deploy in Scrapy Cloud?
+# EXTENSIONS = {
+# "supermarket_crawler.extensions.StatsLogger": 500
+# }
 FEED_FORMAT = "json"
 FEED_EXPORT_INDENT = 4
 FEED_EXPORT_ENCODING = "utf8"
