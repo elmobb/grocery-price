@@ -5,7 +5,7 @@ from datetime import datetime
 
 class TestCleanUpdateTime(unittest.TestCase):
     def setUp(self):
-        from utils.load_item_files import clean_item_update_time
+        from cli.utils.update_product_price_records import clean_item_update_time
         self.func = clean_item_update_time
 
     def test(self):
@@ -18,7 +18,7 @@ class TestCleanUpdateTime(unittest.TestCase):
 
 class TestCleanPrice(unittest.TestCase):
     def setUp(self):
-        from utils.load_item_files import clean_item_price
+        from cli.utils.update_product_price_records import clean_item_price
         self.func = clean_item_price
 
     def test(self):
@@ -27,3 +27,13 @@ class TestCleanPrice(unittest.TestCase):
         self.assertEqual(float(1), self.func(float(1)))
         self.assertEqual(float(1), self.func("1"))
         self.assertEqual(0.1, self.func("0.1"))
+
+
+class TestCleanBrandName(unittest.TestCase):
+    def setUp(self):
+        from cli.utils.update_product_price_records import clean_item_brand_name
+        self.func = clean_item_brand_name
+
+    def test(self):
+        self.assertIsNone(self.func(None))
+        self.assertEqual("a", self.func("a"))

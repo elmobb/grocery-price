@@ -5,8 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import models
+from cli.load import update_product_price_records
 from supermarket_crawler.items import Price
-from utils.load_item_files import update_product_price_records
 
 
 def scrapy_item(**kwargs):

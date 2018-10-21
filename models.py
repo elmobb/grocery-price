@@ -44,6 +44,7 @@ class Product(Base):
     uom = Column(String(100))
     url = Column(String(1000))
     update_time = Column(DateTime)
+    source_filename = Column(String(100))
 
     prices = relationship("Price")
 
@@ -58,6 +59,7 @@ class Price(Base):
     price = Column(Float)
     currency = Column(String(100))
     update_time = Column(DateTime)
+    source_filename = Column(String(100))
 
     product_id = Column(Integer, ForeignKey("product.id"))
 
