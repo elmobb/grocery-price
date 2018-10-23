@@ -2,7 +2,7 @@ from datetime import datetime
 
 import click
 
-from models import Price, Product
+from grocery_price.models import Price, Product
 
 
 def update_product_price_records(items, session, commit_frequency=1000, show_progress=False, source_filename=None):

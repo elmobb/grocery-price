@@ -1,7 +1,7 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler
 
-from bot.utils import find_minimum_price, find_products
+from grocery_price.bot.utils import find_minimum_price, find_products
 
 KEYWORDS, BRAND_NAME, PRODUCT_NAME, UOM, ACTION = range(5)
 

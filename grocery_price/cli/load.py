@@ -2,10 +2,9 @@ import traceback
 
 import click
 
-from cli.utils import get_repository_handler
-from cli.utils.clean_items import get_cleaned_items
-from cli.utils.update_product_price_records import update_product_price_records
-from models import Price, get_session as get_db_session
+from grocery_price.cli.utils import get_cleaned_items, get_repository_handler
+from grocery_price.cli.utils.update_product_price_records import update_product_price_records
+from grocery_price.models import Price, get_session as get_db_session
 
 
 @click.command()

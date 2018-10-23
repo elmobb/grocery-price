@@ -4,9 +4,9 @@ from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-import models
-from cli.load import update_product_price_records
-from supermarket_crawler.items import Price
+from grocery_price import models
+from grocery_price.cli.load import update_product_price_records
+from grocery_price.items import Price
 
 
 def scrapy_item(**kwargs):

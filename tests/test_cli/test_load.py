@@ -1,6 +1,6 @@
-from cli.load import load
+from grocery_price.cli.load import load
+from grocery_price.models import Price, Product
 from tests.test_cli import test_cli
-from models import Product, Price
 
 
 class Test(test_cli.TestCase):

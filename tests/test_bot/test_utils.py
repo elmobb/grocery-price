@@ -1,12 +1,12 @@
 import unittest
 from datetime import date, datetime, time, timedelta
 
-from models import Price, Product, get_session
+from grocery_price.models import Price, Product, get_session
 
 
 class TestFindProduct(unittest.TestCase):
     def setUp(self):
-        from bot.utils import find_products
+        from grocery_price.bot.utils import find_products
         self.func = find_products
         self.session = get_session(uri="sqlite://")
 
@@ -77,7 +77,7 @@ class TestFindProduct(unittest.TestCase):
 
 class TestFindMinimumPrice(unittest.TestCase):
     def setUp(self):
-        from bot.utils import find_minimum_price
+        from grocery_price.bot.utils import find_minimum_price
         self.func = find_minimum_price
         self.session = get_session(uri="sqlite://")
 

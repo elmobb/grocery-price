@@ -4,7 +4,7 @@ from unittest import TestCase
 class Test(TestCase):
 
     def setUp(self):
-        from supermarket_crawler.spiders.park_n_shop import get_price
+        from grocery_price.spiders.park_n_shop import get_price
         self.func = get_price
 
     def test_return_none_if_input_is_none(self):

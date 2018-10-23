@@ -1,4 +1,4 @@
-from cli.list import list
+from grocery_price.cli.list import list
 from tests.test_cli import test_cli
 
 

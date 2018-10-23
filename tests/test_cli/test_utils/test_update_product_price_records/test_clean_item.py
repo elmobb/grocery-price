@@ -5,7 +5,7 @@ from datetime import datetime
 
 class TestCleanUpdateTime(unittest.TestCase):
     def setUp(self):
-        from cli.utils.update_product_price_records import clean_item_update_time
+        from grocery_price.cli.utils.update_product_price_records import clean_item_update_time
         self.func = clean_item_update_time
 
     def test(self):
@@ -18,7 +18,7 @@ class TestCleanUpdateTime(unittest.TestCase):
 
 class TestCleanPrice(unittest.TestCase):
     def setUp(self):
-        from cli.utils.update_product_price_records import clean_item_price
+        from grocery_price.cli.utils.update_product_price_records import clean_item_price
         self.func = clean_item_price
 
     def test(self):
@@ -31,7 +31,7 @@ class TestCleanPrice(unittest.TestCase):
 
 class TestCleanBrandName(unittest.TestCase):
     def setUp(self):
-        from cli.utils.update_product_price_records import clean_item_brand_name
+        from grocery_price.cli.utils.update_product_price_records import clean_item_brand_name
         self.func = clean_item_brand_name
 
     def test(self):

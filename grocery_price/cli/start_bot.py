@@ -1,6 +1,6 @@
 import click
 
-from bot import start
+from grocery_price.bot import start
 
 
 @click.command()

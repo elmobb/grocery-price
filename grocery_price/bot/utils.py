@@ -4,7 +4,7 @@ from datetime import date, timedelta
 import pandas as pd
 from sqlalchemy import or_
 
-from models import Price, Product, get_session
+from grocery_price.models import Price, Product, get_session
 
 
 def db_session(func):

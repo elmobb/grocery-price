@@ -1,7 +1,7 @@
 import click
 from scrapinghub import ScrapinghubClient
 
-from cli.utils import get_repository_handler, timestamp_to_date_string
+from grocery_price.cli.utils import get_repository_handler, timestamp_to_date_string
 
 
 @click.command()

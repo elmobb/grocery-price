@@ -4,7 +4,7 @@ from time import time
 
 from click.testing import CliRunner
 
-from models import get_session
+from grocery_price.models import get_session
 
 
 class TestCase(unittest.TestCase):

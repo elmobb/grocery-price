@@ -1,6 +1,6 @@
 import click
 
-from cli.utils import get_repository_handler
+from grocery_price.cli.utils import get_repository_handler
 
 
 @click.command()

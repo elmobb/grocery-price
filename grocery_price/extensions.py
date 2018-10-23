@@ -1,6 +1,6 @@
 from scrapy import signals
 
-from models import CrawlerStats, get_session
+from grocery_price.models import CrawlerStats, get_session
 
 
 class StatsLogger(object):
