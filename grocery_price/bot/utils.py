@@ -60,7 +60,8 @@ def find_products(session, keywords, shop=None, brand_name=None, name=None, uom=
 
 
 @db_session
-def find_minimum_price(session, shop, sku, days=[0]):
+def find_minimum_price(session, shop, sku, days=None):
+    days = days or [0]
     prices = pd.DataFrame(session.query(
         Price.update_time,
         Price.price
