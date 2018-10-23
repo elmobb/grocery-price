@@ -69,8 +69,7 @@ def find_minimum_price(session, shop, sku, days=None):
         Product
     ).filter(
         Product.shop == shop,
-        Product.sku == sku
-    ).filter(
+        Product.sku == sku,
         Price.update_time >= (date.today() - timedelta(days=max(days))).strftime("%Y-%m-%d")
     ).all(), columns=["update_time", "price"]).set_index("update_time").sort_index()["price"]
 
