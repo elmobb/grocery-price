@@ -2,10 +2,6 @@ from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Uni
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
-from config import Config
-
-config = Config()
-
 Base = declarative_base()
 
 
@@ -67,8 +63,8 @@ class Price(Base):
         return f"Price {self.product_id} {self.update_time} {self.price} {self.currency}>"
 
 
-def get_session(uri=None):
-    engine = create_engine(uri or config.DATABASE_URI)
+def get_session(uri):
+    engine = create_engine(uri)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     return Session()
