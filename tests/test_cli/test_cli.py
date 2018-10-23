@@ -1,6 +1,6 @@
 import os
 import unittest
-from datetime import datetime
+from time import time
 
 from click.testing import CliRunner
 
@@ -8,7 +8,7 @@ from models import get_session
 
 
 class TestCase(unittest.TestCase):
-    DATABASE_URI = f"sqlite:///tmp_{datetime.now().strftime('%s')}.db"
+    DATABASE_URI = f"sqlite:///tmp_{int(time())}.db"
     FEED_URI = "file:///tests/test_repo/%(name)s/%(time)s.json"
 
     def setUp(self):
