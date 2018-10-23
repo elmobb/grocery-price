@@ -42,7 +42,7 @@ class Spider(scrapy.Spider):
         has_next_page = (next_page.xpath("@data-hasnextpage").extract_first() == "true")
         if has_next_page:
             next_page_url = next_page.xpath("@data-nextpageurl").extract_first()
-            yield scrapy.Request(response.urljoin(next_page_url), callback=self.parse)
+            yield scrapy.Request(response.urljoin(next_page_url).replace("/en/", "/zh-hk/"), callback=self.parse)
 
         # Crawl this page.
         for item in response.xpath("//*[@id='product-list']/div/div[2]/div[2]/div[2]/div"):
