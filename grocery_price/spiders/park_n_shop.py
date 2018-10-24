@@ -54,7 +54,7 @@ class Spider(scrapy.Spider):
                     ".//div[@class='homeProductCarousel']/@data-gtm-homeproductcarousel-brand").extract_first(),
                 name=item.xpath(
                     ".//div[@class='homeProductCarousel']/@data-gtm-homeproductcarousel-name").extract_first(),
-                price=get_price(price=item.xpath(".//div[@class='price discount']/text()").extract_first()),
+                price=get_price(price=item.xpath(".//div[@class='price discount ']/text()").extract_first()),
                 currency=self.currency,
                 rrp=item.xpath(".//div[@class='price rrp']/span[1]/text()").extract_first(),
                 sku=item.xpath(".//div[@class='favourite ']/@data-product-code").extract_first(),
