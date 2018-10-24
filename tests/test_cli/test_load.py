@@ -12,7 +12,7 @@ class Test(test_cli.TestCase):
         result = self.runner.invoke(load, ["test_spider_1", "test_file_1.json"], catch_exceptions=False)
         self.assertEqual(0, result.exit_code)
         self.assertEqual("\n".join([
-            "(1/1) test_file_1.json: Loading items...1 items found...Uploading...",
+            "(1/1) test_file_1.json: Loading items...1 items found...Uploading...Done",
             ""
         ]), result.output)
         self.assertEqual(1, self.session.query(Product).count())
@@ -22,8 +22,8 @@ class Test(test_cli.TestCase):
         result = self.runner.invoke(load, ["test_spider_1"], catch_exceptions=False)
         self.assertEqual(0, result.exit_code)
         self.assertEqual("\n".join([
-            "(1/2) test_file_2.json: Loading items...1 items found...Uploading...",
-            "(2/2) test_file_1.json: Loading items...1 items found...Uploading...",
+            "(1/2) test_file_2.json: Loading items...1 items found...Uploading...Done",
+            "(2/2) test_file_1.json: Loading items...1 items found...Uploading...Done",
             ""
         ]), result.output)
         self.assertEqual(1, self.session.query(Product).count())
@@ -33,7 +33,7 @@ class Test(test_cli.TestCase):
         result = self.runner.invoke(load, ["--file-count", 1, "test_spider_1"], catch_exceptions=False)
         self.assertEqual(0, result.exit_code)
         self.assertEqual("\n".join([
-            "(1/1) test_file_2.json: Loading items...1 items found...Uploading...",
+            "(1/1) test_file_2.json: Loading items...1 items found...Uploading...Done",
             ""
         ]), result.output)
         self.assertEqual(1, self.session.query(Product).count())

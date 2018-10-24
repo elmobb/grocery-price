@@ -1,76 +1,82 @@
 from datetime import datetime
-
-import click
+from itertools import groupby
 
 from grocery_price.models import Price, Product
 
 
-def update_product_price_records(items, session, commit_frequency=1000, show_progress=False, source_filename=None):
+def update_product_price_records(items, session, source_filename=None):
     """Upload Scrapy price items to database.
 
     Only the latest product details will be kept. All price records will be kept.
     Uploading same set of items in 1 or multiple batches should have the same result.
     """
-    existing_products = {(i.shop, i.sku): i for i in session.query(Product).filter_by().all()}
-    new_products = []
+    # Cannot have multiple shops.
+    shops = list(set(i["shop"] for i in items))
+    assert len(shops) == 1, "cannot update items of multiple shops at a time"
+    shop = shops[0]
 
-    if show_progress:
-        click.echo("Uploading...")
+    # Remove duplicated items by keeping only the latest one.
+    groups = groupby(sorted(items, key=lambda i: i["sku"]), key=lambda i: i["sku"])
+    items = [sorted(g, key=lambda i: i["update_time"], reverse=True)[0] for sku, g in groups]
 
-    # Ensure the latest version of product is updated first.
-    with click.progressbar(sorted(items, key=lambda i: i["update_time"], reverse=True)) as bar:
-        for i, item in enumerate(bar, start=1):
+    # Cannot have duplicated items.
+    skus = [i["sku"] for i in items]
+    assert len(skus) == len(set(skus)), f"cannot update same items at a time"
 
-            item = clean_item(item=item)
+    # Prepare loading to database by converting items' field values to proper formats.
+    items = [clean_item(i) for i in items]
 
-            product = existing_products.get((item["shop"], item["sku"]))
+    # Get existing products.
+    products = {i.sku: i for i in session.query(Product).filter_by(shop=shop).all()}
 
-            if product is not None:
-                if item["update_time"] > product.update_time:
-                    # Update existing record.
-                    product.shop = item["shop"]
-                    product.sku = item["sku"]
-                    product.brand_name = item["brand_name"]
-                    product.name = item["name"]
-                    product.uom = item["uom"]
-                    product.url = item["url"]
-                    product.update_time = item["update_time"]
-                    if source_filename is not None:
-                        product.source_filename = source_filename
-            else:
-                # Insert new record.
-                product = Product(
-                    shop=item["shop"],
-                    sku=item["sku"],
-                    brand_name=item["brand_name"],
-                    name=item["name"],
-                    uom=item["uom"],
-                    url=item["url"],
-                    update_time=item["update_time"],
-                    source_filename=source_filename
-                )
-                new_products.append(product)
-                existing_products[item["shop"], item["sku"]] = product
+    # Insert products.
+    session.bulk_insert_mappings(Product, [
+        {
+            "shop":            i["shop"],
+            "sku":             i["sku"],
+            "brand_name":      i["brand_name"],
+            "name":            i["name"],
+            "uom":             i["uom"],
+            "url":             i["url"],
+            "update_time":     i["update_time"],
+            "source_filename": source_filename
+        } for i in items if i["sku"] not in products
+    ])
 
-            # Add new price record if update time does not exist.
-            if product is not None and not any(
-                    i.update_time.replace(microsecond=0) == item["update_time"].replace(microsecond=0) for i in
-                    product.prices):
-                product.prices.append(Price(
-                    price=item["price"],
-                    currency=item["currency"],
-                    update_time=item["update_time"],
-                    source_filename=source_filename
-                ))
+    # Update products.
+    session.bulk_update_mappings(Product, [
+        {
+            "id":              products[i["sku"]].id,
+            "shop":            i["shop"],
+            "sku":             i["sku"],
+            "brand_name":      i["brand_name"],
+            "name":            i["name"],
+            "uom":             i["uom"],
+            "url":             i["url"],
+            "update_time":     i["update_time"],
+            "source_filename": source_filename
+        } for i in items if i["sku"] in products and i["update_time"] > products[i["sku"]].update_time
+    ])
 
-            # Commit frequency to reduce memory load.
-            if i % commit_frequency == 0:
-                session.add_all(new_products)
-                session.commit()
-                new_products = []
+    # Get existing products again since products have been updated.
+    products = {i.sku: i for i in session.query(Product).filter_by(shop=shop).all()}
 
-    # Ensure all items are uploaded.
-    session.add_all(new_products)
+    # Get existing prices.
+    update_times = {i["update_time"] for i in items}
+    x = session.query(Price).filter(Price.update_time.between(min(update_times), max(update_times))).all()
+    prices = {(i.product.sku, i.update_time): i for i in x}
+
+    # Insert prices.
+    session.bulk_insert_mappings(Price, [
+        {
+            "product_id":      products[i["sku"]].id,
+            "price":           i["price"],
+            "currency":        i["currency"],
+            "update_time":     i["update_time"],
+            "source_filename": source_filename
+        } for i in items if (i["sku"], i["update_time"]) not in prices
+    ])
+
     session.commit()
 
 
