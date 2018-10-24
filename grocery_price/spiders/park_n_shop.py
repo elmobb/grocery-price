@@ -22,13 +22,18 @@ def get_price(price):
 
 class Spider(scrapy.Spider):
     name = "park_n_shop"
-    start_urls_name = "PARK_N_SHOP_START_URLS"
+    start_urls = [
+        "https://www.parknshop.com/zh-hk/beverages-wine-spirits/lc/040000",
+        "https://www.parknshop.com/zh-hk/groceries/lc/020000",
+        "https://www.parknshop.com/zh-hk/biscuits-snacks-confectionery/lc/030000",
+        "https://www.parknshop.com/zh-hk/household/lc/200000", "https://www.parknshop.com/zh-hk/baby-care/lc/080000",
+        "https://www.parknshop.com/zh-hk/health-beauty-care/lc/090000",
+        "https://www.parknshop.com/zh-hk/frozen-food/lc/060000",
+        "https://www.parknshop.com/zh-hk/fresh-food/lc/070000https://www.parknshop.com/zh-hk/breakfast-bakery/lc/010000",
+        "https://www.parknshop.com/zh-hk/dairy-chilled-eggs/lc/050000",
+        "https://www.parknshop.com/zh-hk/pet-care/lc/210000"
+    ]
     currency = "HKD"
-    download_delay = 0
-
-    def start_requests(self):
-        for url in self.settings.get(self.start_urls_name).split("|"):
-            yield scrapy.Request(url, callback=self.parse)
 
     def parse(self, response):
         """
