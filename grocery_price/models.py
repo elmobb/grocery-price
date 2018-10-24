@@ -42,7 +42,7 @@ class Product(Base):
     update_time = Column(DateTime)
     source_filename = Column(String(100))
 
-    prices = relationship("Price")
+    prices = relationship("Price", back_populates="product")
 
     def __repr__(self):
         return f"<Product {self.shop} {self.sku} {self.name}>"
@@ -58,6 +58,7 @@ class Price(Base):
     source_filename = Column(String(100))
 
     product_id = Column(Integer, ForeignKey("product.id"))
+    product = relationship("Product", back_populates="prices")
 
     def __repr__(self):
         return f"Price {self.product_id} {self.update_time} {self.price} {self.currency}>"
