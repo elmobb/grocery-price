@@ -12,9 +12,10 @@ from grocery_price.models import Price, Product, get_session as get_db_session
 @click.argument("spider_name")
 @click.argument("filename", required=False)
 @click.option("--file-count", type=int, required=False, default=10, help="Number of item files to process.")
+@click.option("--batch-size", type=int, required=False, default=None, help="Fetch to database in batches.")
 @click.option("--feed-uri", envvar="FEED_URI", hidden=True)
 @click.option("--database-uri", envvar="DATABASE_URI", hidden=True)
-def load(feed_uri, database_uri, spider_name, filename, file_count):
+def load(feed_uri, database_uri, spider_name, filename, file_count, batch_size):
     """Load items to database.
 
     By default, load only the latest 10 item files.
@@ -52,7 +53,8 @@ def load(feed_uri, database_uri, spider_name, filename, file_count):
             load_items(
                 source_filename=filename,
                 items=cleaned_items,
-                session=db_session
+                session=db_session,
+                batch_size=batch_size
             )
             db_session.close()
 
@@ -77,7 +79,7 @@ def get_cleaned_items(items, spider_name, filename):
     return cleaned_items
 
 
-def load_items(items, session, source_filename=None):
+def load_items(items, session, source_filename=None, batch_size=None):
     """Upload Scrapy price items to database.
 
     Only the latest product details will be kept. All price records will be kept.
@@ -102,34 +104,61 @@ def load_items(items, session, source_filename=None):
     # Get existing products.
     products = {i.sku: i for i in session.query(Product).filter_by(shop=shop).all()}
 
-    # Insert products.
-    session.bulk_insert_mappings(Product, [
-        {
-            "shop":            i["shop"],
-            "sku":             i["sku"],
-            "brand_name":      i["brand_name"],
-            "name":            i["name"],
-            "uom":             i["uom"],
-            "url":             i["url"],
-            "update_time":     i["update_time"],
-            "source_filename": source_filename
-        } for i in items if i["sku"] not in products
-    ])
+    def insert_products(items):
+        session.bulk_insert_mappings(Product, [
+            {
+                "shop":            i["shop"],
+                "sku":             i["sku"],
+                "brand_name":      i["brand_name"],
+                "name":            i["name"],
+                "uom":             i["uom"],
+                "url":             i["url"],
+                "update_time":     i["update_time"],
+                "source_filename": source_filename
+            } for i in items
+        ])
+        session.commit()
 
-    # Update products.
-    session.bulk_update_mappings(Product, [
-        {
-            "id":              products[i["sku"]].id,
-            "shop":            i["shop"],
-            "sku":             i["sku"],
-            "brand_name":      i["brand_name"],
-            "name":            i["name"],
-            "uom":             i["uom"],
-            "url":             i["url"],
-            "update_time":     i["update_time"],
-            "source_filename": source_filename
-        } for i in items if i["sku"] in products and i["update_time"] > products[i["sku"]].update_time
-    ])
+    def update_products(items):
+        session.bulk_update_mappings(Product, [
+            {
+                "id":              products[i["sku"]].id,
+                "shop":            i["shop"],
+                "sku":             i["sku"],
+                "brand_name":      i["brand_name"],
+                "name":            i["name"],
+                "uom":             i["uom"],
+                "url":             i["url"],
+                "update_time":     i["update_time"],
+                "source_filename": source_filename
+            } for i in items
+        ])
+        session.commit()
+
+    new_products, changed_products = [], []
+    for i in items:
+        if i["sku"] not in products:
+            # Not found in database.
+            new_products.append(i)
+        elif i["update_time"] > products[i["sku"]].update_time:
+            # Outdated in database.
+            changed_products.append(i)
+        else:
+            # Up-to-date in databse.
+            pass
+
+        # Fetch to database if reaching batch size.
+        if batch_size is not None and len(new_products) == batch_size:
+            insert_products(items=new_products)
+            new_products = []
+
+        if batch_size is not None and len(changed_products) == batch_size:
+            update_products(items=changed_products)
+            changed_products = []
+
+    # Fetch remaining to database.
+    insert_products(items=new_products)
+    update_products(items=changed_products)
 
     # Get existing products again since products have been updated.
     products = {i.sku: i for i in session.query(Product).filter_by(shop=shop).all()}
@@ -139,18 +168,34 @@ def load_items(items, session, source_filename=None):
     x = session.query(Price).filter(Price.update_time.between(min(update_times), max(update_times))).all()
     prices = {(i.product.sku, i.update_time): i for i in x}
 
-    # Insert prices.
-    session.bulk_insert_mappings(Price, [
-        {
-            "product_id":      products[i["sku"]].id,
-            "price":           i["price"],
-            "currency":        i["currency"],
-            "update_time":     i["update_time"],
-            "source_filename": source_filename
-        } for i in items if (i["sku"], i["update_time"]) not in prices
-    ])
+    def insert_prices(items):
+        session.bulk_insert_mappings(Price, [
+            {
+                "product_id":      products[i["sku"]].id,
+                "price":           i["price"],
+                "currency":        i["currency"],
+                "update_time":     i["update_time"],
+                "source_filename": source_filename
+            } for i in items
+        ])
+        session.commit()
 
-    session.commit()
+    new_prices = []
+    for i in items:
+        if (i["sku"], i["update_time"]) not in prices:
+            # New prices.
+            new_prices.append(i)
+        else:
+            # Skip price record of same timestamp as existing records.
+            pass
+
+        # Fetch to database if reaching batch size.
+        if batch_size is not None and len(new_prices) == batch_size:
+            insert_prices(items=new_prices)
+            new_prices = []
+
+    # Fetch remaining to database.
+    insert_prices(items=new_prices)
 
 
 def prepare_item_for_load_to_database(item):

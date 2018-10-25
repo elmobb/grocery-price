@@ -40,14 +40,14 @@ class TestCase(unittest.TestCase):
 
     def assertDatabaseRecords(self, products=None, prices=None):
         if products is not None:
-            self.assertEqual(products, self.session.query(
+            self.assertCountEqual(products, self.session.query(
                 models.Product.shop,
                 models.Product.sku,
                 models.Product.update_time
             ).all())
 
         if prices is not None:
-            self.assertEqual(prices, [(
+            self.assertCountEqual(prices, [(
                 i.product.shop,
                 i.product.sku,
                 i.price,
@@ -201,4 +201,25 @@ class TestCase(unittest.TestCase):
             prices=[
                 ("shop", "sku", 1.0, datetime(2018, 1, 1, 0, 0, 0, 0))
             ]
+        )
+
+    def test_process_in_batches(self):
+        # Insert products.
+        self.func(session=self.session, items=[
+            scrapy_item(sku=f"sku_{i}", update_time=datetime(2018, 1, 1), price=1) for i in range(100)
+        ], batch_size=1)
+        # Update products.
+        self.func(session=self.session, items=[
+            scrapy_item(sku=f"sku_{i}", update_time=datetime(2018, 1, 2), price=2) for i in range(100)
+        ], batch_size=1)
+
+        self.assertDatabaseRecords(
+            products=[
+                ("shop", f"sku_{i}", datetime(2018, 1, 2, 0, 0, 0, 0)) for i in range(100)
+            ],
+            prices=[
+                       ("shop", f"sku_{i}", 1.0, datetime(2018, 1, 1, 0, 0, 0, 0)) for i in range(100)
+                   ] + [
+                       ("shop", f"sku_{i}", 2.0, datetime(2018, 1, 2, 0, 0, 0, 0)) for i in range(100)
+                   ]
         )
