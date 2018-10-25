@@ -3,10 +3,10 @@ import unittest
 from datetime import datetime
 
 
-class TestCleanUpdateTime(unittest.TestCase):
+class TestUpdateTime(unittest.TestCase):
     def setUp(self):
-        from grocery_price.cli.utils.update_product_price_records import clean_item_update_time
-        self.func = clean_item_update_time
+        from grocery_price.cli.load import prepare_update_time
+        self.func = prepare_update_time
 
     def test(self):
         self.assertIsNone(self.func(None))
@@ -16,10 +16,10 @@ class TestCleanUpdateTime(unittest.TestCase):
         self.assertEqual(datetime(2018, 10, 6, 14, 39, 19, 558000), self.func(1538836759.558))  # UTC time.
 
 
-class TestCleanPrice(unittest.TestCase):
+class TestPrice(unittest.TestCase):
     def setUp(self):
-        from grocery_price.cli.utils.update_product_price_records import clean_item_price
-        self.func = clean_item_price
+        from grocery_price.cli.load import prepare_price
+        self.func = prepare_price
 
     def test(self):
         self.assertIsNone(self.func(None))
@@ -29,10 +29,10 @@ class TestCleanPrice(unittest.TestCase):
         self.assertEqual(0.1, self.func("0.1"))
 
 
-class TestCleanBrandName(unittest.TestCase):
+class TestBrandName(unittest.TestCase):
     def setUp(self):
-        from grocery_price.cli.utils.update_product_price_records import clean_item_brand_name
-        self.func = clean_item_brand_name
+        from grocery_price.cli.load import prepare_brand_name
+        self.func = prepare_brand_name
 
     def test(self):
         self.assertIsNone(self.func(None))

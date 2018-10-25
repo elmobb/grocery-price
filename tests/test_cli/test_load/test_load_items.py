@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from grocery_price import models
-from grocery_price.cli.load import update_product_price_records
+from grocery_price.cli.load import load_items
 from grocery_price.items import Price
 
 
@@ -33,7 +33,7 @@ class TestCase(unittest.TestCase):
         models.Base.metadata.create_all(engine)
         Session = sessionmaker(bind=engine)
         self.session = Session()
-        self.func = update_product_price_records
+        self.func = load_items
 
     def tearDown(self):
         self.session.close()

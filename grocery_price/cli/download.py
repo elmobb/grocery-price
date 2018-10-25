@@ -1,7 +1,9 @@
+from datetime import datetime, timezone
+
 import click
 from scrapinghub import ScrapinghubClient
 
-from grocery_price.cli.utils import get_repository_handler, timestamp_to_date_string
+from grocery_price.cli.utils.repository import get_repository_handler
 
 
 @click.command()
@@ -42,3 +44,7 @@ def download(feed_uri, scrapy_api_key, scrapy_project_id, overwrite=False):
 
             else:
                 click.echo(" - skip")
+
+
+def timestamp_to_date_string(timestamp):
+    return datetime.fromtimestamp(timestamp / 1000, timezone.utc).strftime("%Y-%m-%dT%H-%M-%S")
