@@ -7,26 +7,48 @@ import scrapy
 from ..items import Price
 
 
-def get_page_urls(category_code, page_size=60, page_type="searchResult"):
+def get_start_urls(category_codes, page_size=60, page_type="searchResult"):
     """Get URLs that contain product details in JSON format.
     """
-    assert isinstance(category_code, str)
-    assert all(isinstance(i, str) for i in category_code)
+    assert isinstance(category_codes, list)
+    assert all(isinstance(i, str) for i in category_codes)
     assert isinstance(page_size, int)
     assert page_type in ["searchResult"]
 
-    def get_page_url(current_page):
-        return f"https://www.hktvmall.com/hktv/zh/ajax/search_products?query=:relevance:street:main:category:{category_code}:&currentPage={current_page}&pageSize={page_size}&pageType={page_type}&categoryCode={category_code}"
+    urls = []
+    for category_code in category_codes:
+        def page_url(page):
+            return f"https://www.hktvmall.com/hktv/zh/ajax/search_products?query=:relevance:street:main:category:{category_code}:&currentPage={page}&pageSize={page_size}&pageType={page_type}&categoryCode={category_code}"
 
-    r = requests.get(url=get_page_url(current_page=0)).json()
-    number_of_pages = r["pagination"]["numberOfPages"]
+        r = requests.get(url=page_url(page=0)).json()
+        number_of_pages = r["pagination"]["numberOfPages"]
+        urls.extend([page_url(page=n) for n in range(number_of_pages)])
 
-    return [get_page_url(current_page=n) for n in range(number_of_pages)]
+    return urls
 
 
 class Spider(scrapy.Spider):
     name = "hktvmall"
-    start_urls = get_page_urls(category_code="AA11220000000")
+    start_urls = get_start_urls(category_codes=[
+        ""
+        "AA11080000000",  # 水果 蔬菜 鮮花
+        "AA11110000000",  # 冷凍/急凍食品
+        "AA11150000000",  # 零食 甜品
+        "AA11220000000",  # 飲品 即沖飲品
+        "AA11350000000",  # 即食麵 麵  意粉
+        "AA11380000000",  # 米 食油
+        "AA11450000000",  # 調味 醬料
+        "AA11480000000",  # 湯 熟食 醃製食品
+        "AA11550000000",  # 罐頭 乾貨
+        "AA11600000000",  # 早餐 果醬
+        "AA11650000000",  # 有機 健康食品
+        "AA11720000000",  # 醫藥產品
+        "AA11800000000",  # 紙品 即棄品 家居用品
+        "AA11820000000",  # 家居清潔用品
+        "AA11850000000",  # 個人護理用品
+        "AA11920000000",  # 嬰兒用品 食品
+        "AA11960000000"  # 貓狗用品
+    ])
     currency = "HKD"
 
     def parse(self, response):
