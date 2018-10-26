@@ -1,4 +1,5 @@
 import json
+import time
 from datetime import datetime
 
 import requests
@@ -7,7 +8,7 @@ import scrapy
 from ..items import Price
 
 
-def get_start_urls(category_codes, page_size=60, page_type="searchResult"):
+def get_start_urls(category_codes, page_size=60, page_type="searchResult", retries=10):
     """Get URLs that contain product details in JSON format.
     """
     assert isinstance(category_codes, list)
@@ -20,8 +21,18 @@ def get_start_urls(category_codes, page_size=60, page_type="searchResult"):
         def page_url(page):
             return f"https://www.hktvmall.com/hktv/zh/ajax/search_products?query=:relevance:street:main:category:{category_code}:&currentPage={page}&pageSize={page_size}&pageType={page_type}&categoryCode={category_code}"
 
-        r = requests.get(url=page_url(page=0)).json()
-        number_of_pages = r["pagination"]["numberOfPages"]
+        # Try getting category page URL.
+        for i in range(retries):
+            r = requests.get(url=page_url(page=0))
+            if r.status_code == 200:
+                break
+            time.sleep(1)
+
+        # Skip category code if cannot get page URL.
+        if r.status_code != 200:
+            continue
+
+        number_of_pages = r.json()["pagination"]["numberOfPages"]
         urls.extend([page_url(page=n) for n in range(number_of_pages)])
 
     return urls
