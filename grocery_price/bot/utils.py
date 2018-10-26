@@ -60,7 +60,8 @@ def find_products(session, keywords, shop=None, brand_name=None, name=None, uom=
 
 
 @db_session
-def find_minimum_price(session, shop, sku, days=None):
+def find_minimum_price(session, shop, sku, days=None, hours=None):
+    hours = hours or os.environ.get("DATABASE_ADD_HOURS", 0)  # Adjust for database timezone difference.
     days = days or [0]
     prices = pd.DataFrame(session.query(
         Price.update_time,
@@ -70,8 +71,12 @@ def find_minimum_price(session, shop, sku, days=None):
     ).filter(
         Product.shop == shop,
         Product.sku == sku,
-        Price.update_time >= (date.today() - timedelta(days=max(days))).strftime("%Y-%m-%d")
-    ).all(), columns=["update_time", "price"]).set_index("update_time").sort_index()["price"]
+        Price.update_time >= (date.today() - timedelta(days=max(days), hours=hours)).strftime("%Y-%m-%d")
+    ).all(), columns=["update_time", "price"])
+
+    prices["update_time"] = prices["update_time"].apply(lambda x: x - timedelta(hours=hours))
+
+    prices = prices.set_index("update_time").sort_index()["price"]
 
     def get_minimum_price_of_last_n_days(n):
         if len(prices) == 0:

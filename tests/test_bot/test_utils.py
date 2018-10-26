@@ -120,6 +120,25 @@ class TestFindMinimumPrice(unittest.TestCase):
             4: float(1)
         }, self.func(shop="shop", sku="sku", days=[0, 1, 2, 3, 4], session=self.session))
 
+    def test_timezone_difference_is_considered(self):
+        self.session.add_all([
+            Product(shop="shop", sku="sku", prices=[
+                Price(price=5, update_time=datetime.combine(date.today(), time(8, 0))),  # Still today after adjustment.
+                Price(price=4, update_time=datetime.combine(date.today(), time(7, 59))),  # Become yesterday.
+                Price(price=3, update_time=datetime.combine(date.today(), time(8, 0)) - timedelta(days=1)),
+                Price(price=2, update_time=datetime.combine(date.today(), time(8, 0)) - timedelta(days=2)),
+                Price(price=1, update_time=datetime.combine(date.today(), time(8, 0)) - timedelta(days=3))
+            ])
+        ])
+        self.session.commit()
+        self.assertEqual({
+            0: float(5),
+            1: float(5),
+            2: float(3),
+            3: float(2),
+            4: float(1)
+        }, self.func(shop="shop", sku="sku", days=[0, 1, 2, 3, 4], hours=8, session=self.session))
+
     def test_no_price_records_found(self):
         self.session.add_all([
             Product(shop="shop", sku="sku", prices=[])
