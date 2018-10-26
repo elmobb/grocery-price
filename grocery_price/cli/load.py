@@ -43,6 +43,11 @@ def load(feed_uri, database_uri, spider_name, filename, file_count, batch_size):
 
         try:
             items = repo.get_items_from_item_file(spider_name=spider_name, filename=filename)
+
+            if items is None:
+                click.echo("Skip (failed getting items from item file)")
+                continue
+
             cleaned_items = get_cleaned_items(items=items, spider_name=spider_name, filename=filename)
 
             click.echo(f"{len(cleaned_items)} items found...", nl=False)
