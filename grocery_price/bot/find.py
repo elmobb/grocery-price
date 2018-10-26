@@ -16,7 +16,7 @@ def find(bot, update, chat_data, args):
         return ConversationHandler.END
 
     # Get unique brand names.
-    brand_names = list(set(i.brand_name for i in chat_data["products"] if i.name != ""))
+    brand_names = list(set(i.brand_name for i in chat_data["products"] if i.brand_name != ""))
 
     # Send welcome message.
     update.message.reply_text(
