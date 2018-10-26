@@ -72,7 +72,7 @@ class Spider(scrapy.Spider):
                 shop=self.name,
                 categories="|".join([i.get("name") for i in categories]) if categories is not None else None,
                 brand_name=product.get("brandName"),
-                name=product.get("summary"),
+                name=product.get("name"),
                 price=promotion_price.get("value") if has_discount_price else price.get("value"),
                 currency=product.get("price").get("currencyIso"),
                 rrp=price.get("value"),
