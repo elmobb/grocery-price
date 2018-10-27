@@ -7,16 +7,17 @@ KEYWORDS, BRAND_NAME, PRODUCT_NAME, UOM, SHOP, ACTION = range(6)
 
 
 def find(bot, update, chat_data, args):
+    chat_data.clear()  # Prevent this find being affected by previous chats.
     chat_data["keywords"] = args
-    chat_data["products"] = find_products(keywords=chat_data["keywords"])
+    products = find_products(keywords=chat_data["keywords"])
 
     # No products found.
-    if len(chat_data["products"]) == 0:
+    if len(products) == 0:
         update.message.reply_text(text="Oops! No products found.")
         return ConversationHandler.END
 
     # Get unique brand names.
-    brand_names = list(set(i.brand_name for i in chat_data["products"] if i.brand_name != ""))
+    brand_names = list(set(i.brand_name for i in products if i.brand_name != ""))
 
     # Send welcome message.
     update.message.reply_text(
@@ -40,7 +41,7 @@ def get_filter(step):
         chat_data[keys[step]] = query.data
 
         # Get products fulfilled selection in previous state.
-        chat_data["products"] = find_products(
+        products = find_products(
             keywords=chat_data.get("keywords"),
             shop=chat_data.get("shop"),
             brand_name=chat_data.get("brand_name"),
@@ -52,7 +53,7 @@ def get_filter(step):
 
             # Get filter keys.
             next_key = keys[step + 1]
-            values = list(set(getattr(i, next_key) for i in chat_data["products"] if getattr(i, next_key) != ""))
+            values = list(set(getattr(i, next_key) for i in products if getattr(i, next_key) != ""))
 
             # Show product filter key buttons.
             bot.delete_message(chat_id=query.message.chat_id, message_id=query.message.message_id)
@@ -65,7 +66,7 @@ def get_filter(step):
 
             return state[step + 1]
 
-        chat_data["product"] = chat_data["products"][0]
+        chat_data["product"] = products[0]
 
         # Show action buttons.
         bot.delete_message(chat_id=query.message.chat_id, message_id=query.message.message_id)
