@@ -243,4 +243,37 @@ def prepare_brand_name(brand_name):
     if brand_name is None:
         return None
 
-    return brand_name
+    if isinstance(brand_name, str):
+        return brand_name.strip()
+
+    raise TypeError(f"unknown type {type(brand_name)}.")
+
+
+def prepare_name(name):
+    if name is None:
+        return None
+
+    if isinstance(name, str):
+        return name.strip()
+
+    raise TypeError(f"unknown type {type(name)}.")
+
+
+def prepare_sku(sku):
+    if sku is None:
+        return None
+
+    if isinstance(sku, str):
+        return sku.strip()
+
+    raise TypeError(f"unknown type {type(sku)}.")
+
+
+def prepare_uom(uom):
+    if uom is None:
+        return None
+
+    if isinstance(uom, str):
+        return uom.strip()
+
+    raise TypeError(f"unknown type {type(uom)}.")

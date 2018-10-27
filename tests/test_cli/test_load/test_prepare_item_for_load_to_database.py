@@ -36,4 +36,46 @@ class TestBrandName(unittest.TestCase):
 
     def test(self):
         self.assertIsNone(self.func(None))
-        self.assertEqual("a", self.func("a"))
+        self.assertEqual("a", self.func(" a"))
+        self.assertEqual("a", self.func("a "))
+        self.assertEqual("a", self.func(" a "))
+        self.assertEqual("a b", self.func("a b"))
+
+
+class TestName(unittest.TestCase):
+    def setUp(self):
+        from grocery_price.cli.load import prepare_name
+        self.func = prepare_name
+
+    def test(self):
+        self.assertIsNone(self.func(None))
+        self.assertEqual("a", self.func(" a"))
+        self.assertEqual("a", self.func("a "))
+        self.assertEqual("a", self.func(" a "))
+        self.assertEqual("a b", self.func("a b"))
+
+
+class TestSku(unittest.TestCase):
+    def setUp(self):
+        from grocery_price.cli.load import prepare_sku
+        self.func = prepare_sku
+
+    def test(self):
+        self.assertIsNone(self.func(None))
+        self.assertEqual("a", self.func(" a"))
+        self.assertEqual("a", self.func("a "))
+        self.assertEqual("a", self.func(" a "))
+        self.assertEqual("a b", self.func("a b"))
+
+
+class TestUom(unittest.TestCase):
+    def setUp(self):
+        from grocery_price.cli.load import prepare_uom
+        self.func = prepare_uom
+
+    def test(self):
+        self.assertIsNone(self.func(None))
+        self.assertEqual("a", self.func(" a"))
+        self.assertEqual("a", self.func("a "))
+        self.assertEqual("a", self.func(" a "))
+        self.assertEqual("a b", self.func("a b"))
