@@ -21,7 +21,7 @@ def find(bot, update, chat_data, args):
     # Send welcome message.
     update.message.reply_text(
         "Hi! Are you looking for a product?\nSend /cancel to cancel.",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(i, callback_data=i)] for i in brand_names])
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(i, callback_data=i)] for i in sorted(brand_names)])
     )
 
     return BRAND_NAME
@@ -60,7 +60,7 @@ def get_filter(step):
                 chat_id=query.message.chat_id,
                 text=query.message.text,
                 parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(i, callback_data=i)] for i in values])
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(i, callback_data=i)] for i in sorted(values)])
             )
 
             return state[step + 1]
