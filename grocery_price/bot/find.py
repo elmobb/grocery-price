@@ -3,7 +3,7 @@ from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandl
 
 from grocery_price.bot.utils import find_minimum_price, find_products
 
-KEYWORDS, BRAND_NAME, PRODUCT_NAME, UOM, ACTION = range(5)
+KEYWORDS, BRAND_NAME, PRODUCT_NAME, UOM, SHOP, ACTION = range(6)
 
 
 def find(bot, update, chat_data, args):
@@ -30,8 +30,8 @@ def find(bot, update, chat_data, args):
 def get_filter(step):
     """Get filter state function. Filter state filters out products that fulfill criteria.
     """
-    state = [BRAND_NAME, PRODUCT_NAME, UOM]
-    keys = ["brand_name", "name", "uom"]
+    state = [BRAND_NAME, PRODUCT_NAME, UOM, SHOP]
+    keys = ["brand_name", "name", "uom", "shop"]
     has_next_state = (step + 1 < len(state))
 
     def filter_(bot, update, chat_data):
@@ -146,6 +146,10 @@ find_handler = ConversationHandler(
         ],
         UOM:          [
             CallbackQueryHandler(get_filter(step=2), pass_chat_data=True),
+            CommandHandler("cancel", cancel)
+        ],
+        SHOP:         [
+            CallbackQueryHandler(get_filter(step=3), pass_chat_data=True),
             CommandHandler("cancel", cancel)
         ],
         # Choose action.
