@@ -89,7 +89,7 @@ class Spider(scrapy.Spider):
                 rrp=price.get("value"),
                 sku=product.get("code"),
                 special_offers=None,
-                url=product.get("url"),
+                url=response.urljoin(product.get("url")),
                 others=None,
                 uom=product.get("packingSpec"),
                 update_time=datetime.now()
