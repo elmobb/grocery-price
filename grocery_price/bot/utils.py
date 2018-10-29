@@ -1,5 +1,6 @@
 import os
 from datetime import date, timedelta
+from itertools import groupby
 
 import pandas as pd
 from sqlalchemy import or_
@@ -92,3 +93,11 @@ def find_minimum_price(session, shop, sku, days=None, hours=None):
         return x if pd.notnull(x) else None
 
     return {n: get_minimum_price_of_last_n_days(n) for n in days}
+
+
+def get_filter_keys(products, key):
+    def key_func(i):
+        return getattr(i, key)
+
+    x = sorted([i for i in products if key_func(i) is not None and key_func(i) != ""], key=key_func)
+    return [(k, len(list(g))) for k, g in groupby(x, key=key_func)]

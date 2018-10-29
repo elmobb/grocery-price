@@ -1,7 +1,7 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import CallbackQueryHandler, CommandHandler, ConversationHandler
 
-from grocery_price.bot.utils import find_minimum_price, find_products
+from grocery_price.bot.utils import find_minimum_price, find_products, get_filter_keys
 
 KEYWORDS, BRAND_NAME, PRODUCT_NAME, UOM, SHOP, ACTION = range(6)
 
@@ -17,12 +17,14 @@ def find(bot, update, chat_data, args):
         return ConversationHandler.END
 
     # Get unique brand names.
-    brand_names = list(set(i.brand_name for i in products if i.brand_name != ""))
+    brand_names = get_filter_keys(products=products, key="brand_name")
 
     # Send welcome message.
     update.message.reply_text(
         "Hi! Are you looking for a product?\nSend /cancel to cancel.",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(i, callback_data=i)] for i in sorted(brand_names)])
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton(f"{i[0]} ({i[1]})", callback_data=i[0])] for i in brand_names
+        ])
     )
 
     return BRAND_NAME
@@ -52,8 +54,7 @@ def get_filter(step):
         if has_next_state:
 
             # Get filter keys.
-            next_key = keys[step + 1]
-            values = list(set(getattr(i, next_key) for i in products if getattr(i, next_key) != ""))
+            values = get_filter_keys(products=products, key=keys[step + 1])
 
             # Show product filter key buttons.
             bot.delete_message(chat_id=query.message.chat_id, message_id=query.message.message_id)
@@ -61,7 +62,9 @@ def get_filter(step):
                 chat_id=query.message.chat_id,
                 text=query.message.text,
                 parse_mode="Markdown",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(i, callback_data=i)] for i in sorted(values)])
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton(f"{i[0]} ({i[1]})", callback_data=i[0])] for i in values
+                ])
             )
 
             return state[step + 1]

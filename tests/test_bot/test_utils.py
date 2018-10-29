@@ -147,3 +147,60 @@ class TestFindMinimumPrice(unittest.TestCase):
         self.assertEqual({
             0: None
         }, self.func(shop="shop", sku="sku", days=[0], session=self.session))
+
+
+class TestGetFilterKeys(unittest.TestCase):
+    def setUp(self):
+        from grocery_price.bot.utils import get_filter_keys
+        self.func = get_filter_keys
+
+    def test_zero_product(self):
+        self.assertEqual([], self.func(products=[], key="brand_name"))
+
+    def test_1_product(self):
+        self.assertEqual([
+            ("A", 1)
+        ], self.func(products=[
+            Product(brand_name="A")
+        ], key="brand_name"))
+
+    def test_multiple_products(self):
+        self.assertEqual([
+            ("A", 1),
+            ("B", 2),
+            ("C", 3)
+        ], self.func(products=[
+            Product(brand_name="A"),
+            Product(brand_name="B"),
+            Product(brand_name="B"),
+            Product(brand_name="C"),
+            Product(brand_name="C"),
+            Product(brand_name="C")
+        ], key="brand_name"))
+
+    def test_products_are_not_sorted(self):
+        self.assertEqual([
+            ("A", 1),
+            ("B", 2),
+            ("C", 3)
+        ], self.func(products=[
+            Product(brand_name="B"),
+            Product(brand_name="C"),
+            Product(brand_name="A"),
+            Product(brand_name="B"),
+            Product(brand_name="C"),
+            Product(brand_name="C")
+        ], key="brand_name"))
+
+    def test_products_with_none_value_as_key_are_ignored(self):
+        # 1 null key product.
+        self.assertEqual([], self.func(products=[
+            Product(brand_name=None)
+        ], key="brand_name"))
+
+        # Multiple null key products.
+        self.assertEqual([], self.func(products=[
+            Product(brand_name=None),
+            Product(brand_name=None),
+            Product(brand_name=None)
+        ], key="brand_name"))
