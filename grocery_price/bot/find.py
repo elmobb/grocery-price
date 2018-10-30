@@ -103,6 +103,9 @@ def action(bot, update, chat_data):
     if query.data == "low":
         return low(bot=bot, update=update, chat_data=chat_data)
 
+    if query.data == "action":
+        return select_action(bot=bot, update=update, chat_data=chat_data)
+
     raise NotImplementedError
 
 
@@ -127,10 +130,13 @@ def low(bot, update, chat_data):
             f"13-Week lowest: {min_prices[91]}",
             f"52-Week lowest: {min_prices[364]}"
         ]),
-        parse_mode="Markdown"
+        parse_mode="Markdown",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("Back", callback_data="action")]
+        ])
     )
 
-    return ConversationHandler.END
+    return ACTION
 
 
 def cancel(bot, update):
