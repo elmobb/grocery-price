@@ -32,19 +32,19 @@ def start(bot, update, chat_data, args):
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton(f"{i[0]} ({i[1]})", callback_data=i[0])] for i in get_filter_keys(
                 products=products,
-                key="brand_name"
+                key="shop"
             )
         ])
     )
 
-    return BRAND_NAME
+    return SHOP
 
 
 def filter(by):
     """Get filter state function. Filter state filters out products that fulfill criteria.
     """
-    states = [BRAND_NAME, PRODUCT_NAME, UOM, SHOP]
-    keys = ["brand_name", "name", "uom", "shop"]
+    states = [SHOP, BRAND_NAME, PRODUCT_NAME, UOM]
+    keys = ["shop", "brand_name", "name", "uom"]
     step = [i for i, v in enumerate(keys) if v == by][0]
     has_next_state = (step + 1 < len(states))
 
@@ -155,6 +155,10 @@ find_handler = ConversationHandler(
     ],
     states={
         # Select a product.
+        SHOP:         [
+            CallbackQueryHandler(filter(by="shop"), pass_chat_data=True),
+            CommandHandler("cancel", cancel)
+        ],
         BRAND_NAME:   [
             CallbackQueryHandler(filter(by="brand_name"), pass_chat_data=True),
             CommandHandler("cancel", cancel)
@@ -165,10 +169,6 @@ find_handler = ConversationHandler(
         ],
         UOM:          [
             CallbackQueryHandler(filter(by="uom"), pass_chat_data=True),
-            CommandHandler("cancel", cancel)
-        ],
-        SHOP:         [
-            CallbackQueryHandler(filter(by="shop"), pass_chat_data=True),
             CommandHandler("cancel", cancel)
         ],
         # Choose action.
