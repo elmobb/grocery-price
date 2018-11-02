@@ -33,7 +33,8 @@ class Spider(scrapy.Spider):
             for item in response.xpath("//*[@id='product-list']/div/div[2]/div[2]/div[2]/div"):
                 yield Promotion(
                     shop="park_n_shop",
-                    promotion_name=promotion_name,
+                    code=response.request.url,
+                    name=promotion_name,
                     sku=item.xpath(".//div[@class='favourite ']/@data-product-code").extract_first(),
                     update_time=datetime.now()
                 )
