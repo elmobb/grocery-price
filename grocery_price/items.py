@@ -15,3 +15,10 @@ class Price(scrapy.Item):
     others = scrapy.Field()
     uom = scrapy.Field()
     update_time = scrapy.Field()
+
+
+class Promotion(scrapy.Item):
+    shop = scrapy.Field()
+    promotion_name = scrapy.Field()
+    sku = scrapy.Field()
+    update_time = scrapy.Field()
